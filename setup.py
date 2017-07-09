@@ -23,23 +23,19 @@
 # SOFTWARE.
 
 from setuptools import find_packages, setup
-from shutil import copyfile
-
-copyfile(".semver", "detective/.semver")
+from detective.helpers.PackageHelper import PackageHelper
 
 with open("requirements.txt") as file:
     requirements = file.read().splitlines()
 
 with open("README.rst") as file:
+    # The PyPi description does not support the SVG file type.
     readme = file.read().replace(".svg?pypi=png.from.svg", ".png")
 
-with open(".semver") as file:
-    semver = file.read()
-
 setup(
-    version=semver,
-    name="detective",
-    description="A private detective that gathers information you're not supposed to know about",
+    name=PackageHelper.get_alias(),
+    version=PackageHelper.get_version(),
+    description=PackageHelper.get_description(),
     long_description=readme,
     keywords = ["vulnerability", "bug-bounty", "security", "information-disclosure", "sensitive-data-exposure", "scanner"],
     classifiers=[
@@ -69,7 +65,7 @@ setup(
     },
     platforms=["any"],
     author="Tijme Gommers",
-    author_email="tijme@finnwea.com",
+    author_email="detective@finnwea.com",
     license="MIT",
     url="https://github.com/tijme/detective",
     install_requires=requirements
