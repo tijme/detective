@@ -22,5 +22,52 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import colorlog
+
+from nyawc.QueueItem import QueueItem
+from nyawc.Crawler import Crawler
+from nyawc.CrawlerActions import CrawlerActions
+from nyawc.http.Request import Request
+from detective.helpers.PackageHelper import PackageHelper
+from requests_toolbelt import user_agent
+
 class Driver:
-    pass
+
+    def __init__(self, args, options):
+        self.args = args
+        self.options = options
+
+        self.options.identity.headers.update({
+            "User-Agent": user_agent(PackageHelper.get_alias(), PackageHelper.get_version())
+        })
+
+        self.options.callbacks.crawler_before_start = self.cb_crawler_before_start
+        self.options.callbacks.crawler_after_finish = self.cb_crawler_after_finish
+        self.options.callbacks.request_before_start = self.cb_request_before_start
+        self.options.callbacks.request_after_finish = self.cb_request_after_finish
+
+    def start(self):
+        startpoint = Request(self.args.domain)
+
+        crawler = Crawler(self.options)
+        crawler.start_with(startpoint)
+
+    def cb_crawler_before_start(self):
+        colorlog.getLogger().info("Crawler started.")
+
+    def cb_crawler_after_finish(self, queue):
+        colorlog.getLogger().info("Crawler finished.")
+        colorlog.getLogger().info("Found " + str(queue.count_finished) + " requests.")
+
+    def cb_request_before_start(self, queue, queue_item):
+        vulnerable = False
+
+        if vulnerable:
+            if self.args.stop_if_vulnerable:
+                return CrawlerActions.DO_STOP_CRAWLING
+
+        return CrawlerActions.DO_CONTINUE_CRAWLING
+
+    def cb_request_after_finish(self, queue, queue_item, new_queue_items):
+
+        return CrawlerActions.DO_CONTINUE_CRAWLING
