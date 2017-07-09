@@ -1,5 +1,5 @@
-Detective
----------
+Detective (in development)
+--------------------------
 
 
 .. image:: https://img.shields.io/pypi/pyversions/detective.svg
