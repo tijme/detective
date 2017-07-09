@@ -1,3 +1,8 @@
+.. image:: https://cdn.rawgit.com/tijme/detective/develop/.github/logo.svg
+   :width: 300px
+   :height: 300px
+   :alt: Detective logo
+   
 Detective (in development)
 --------------------------
 
