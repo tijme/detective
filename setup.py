@@ -43,7 +43,7 @@ setup(
     long_description=readme,
     keywords = ["vulnerability", "bug-bounty", "security", "information-disclosure", "sensitive-data-exposure", "scanner"],
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 2 - Pre-Alpha",
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
