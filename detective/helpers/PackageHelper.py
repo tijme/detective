@@ -50,6 +50,7 @@ class PackageHelper:
 
         Returns:
             str: The name of this package.
+
         """
 
         return PackageHelper.__name
@@ -60,6 +61,7 @@ class PackageHelper:
 
         Returns:
             str: The description of this package.
+
         """
 
         return PackageHelper.__description
@@ -70,6 +72,7 @@ class PackageHelper:
 
         Returns:
             str: The alias of this package.
+
         """
 
         return PackageHelper.__alias
@@ -116,3 +119,30 @@ class PackageHelper:
             pass
 
         return PackageHelper.__version
+
+    @staticmethod
+    def rst_to_pypi(contents):
+        """Convert the given GitHub RST contents to PyPi RST contents (since some RST directives are not available in PyPi).
+
+        Args:
+            contents (str): The GitHub compatible RST contents.
+
+        Returns:
+            str: The PyPi compatible RST contents.
+
+        """
+
+        # The PyPi description does not support the SVG file type.
+        contents = contents.replace(".svg?pypi=png.from.svg", ".png")
+
+        # Convert ``<br class="title">`` to a H1 title
+        asterisks_length = len(PackageHelper.get_name())
+        asterisks = "*" * asterisks_length
+        title = asterisks + "\n" + PackageHelper.get_name() + "\n" + asterisks;
+
+        contents = re.sub(r"(\.\. raw\:\: html\n)(\n {2,4})(\<br class=\"title\"\>)", title, contents)
+
+        # The PyPi description does not support raw HTML
+        contents = re.sub(r"(\.\. raw\:\: html\n)((\n {2,4})([A-Za-z0-9<>\ =\"\/])*)*", "", contents)
+
+        return contents

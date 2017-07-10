@@ -22,6 +22,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import re
+
 from setuptools import find_packages, setup
 from detective.helpers.PackageHelper import PackageHelper
 
@@ -29,8 +31,7 @@ with open("requirements.txt") as file:
     requirements = file.read().splitlines()
 
 with open("README.rst") as file:
-    # The PyPi description does not support the SVG file type.
-    readme = file.read().replace(".svg?pypi=png.from.svg", ".png")
+    readme = PackageHelper.rst_to_pypi(file.read())
 
 setup(
     name=PackageHelper.get_alias(),

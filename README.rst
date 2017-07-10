@@ -9,12 +9,12 @@
 
 .. raw:: html
 
-   <br>
+   <br class="title">
 
 .. image:: https://img.shields.io/pypi/v/detective.svg
    :target: https://pypi.python.org/pypi/detective/
    :alt: PyPi version
-   
+
 .. image:: https://img.shields.io/pypi/pyversions/detective.svg
    :target: https://www.python.org/
    :alt: Python version
@@ -26,10 +26,7 @@
 .. raw:: html
 
    </p>
-   
-*********
-Detective
-*********
+   <h1>Detective</h1>
 
 Detective helps you find information (at your favorite bug bounty program) that you are not supposed to see. It primarily focuses on information disclosure and sensitive data exposure vulnerabilities.
 
