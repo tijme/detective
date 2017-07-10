@@ -107,6 +107,7 @@ class PackageHelper:
             semver = open(folder + "/../../.semver", "r")
             PackageHelper.__version = semver.read()
             semver.close()
+            return PackageHelper.__version
         except:
             pass
 
@@ -115,6 +116,7 @@ class PackageHelper:
             distribution = pkg_resources.get_distribution(PackageHelper.get_alias())
             if distribution.version:
                 PackageHelper.__version = distribution.version
+            return PackageHelper.__version
         except:
             pass
 

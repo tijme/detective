@@ -62,12 +62,38 @@ def require_arguments():
 def setup_logger():
     """Setup ColorLog to enable colored logging output."""
 
+    # Colored logging
     handler = colorlog.StreamHandler()
-    handler.setFormatter(colorlog.ColoredFormatter("%(log_color)s[%(levelname)s] %(message)s"))
+    handler.setFormatter(colorlog.ColoredFormatter(
+        "%(log_color)s[%(levelname)s] %(message)s",
+        log_colors={
+            "DEBUG": "cyan",
+            "INFO": "white",
+            "SUCCESS": "green",
+            "WARNING": "yellow",
+            "ERROR": "red",
+            "CRITICAL": "red,bg_white"
+        }
+    ))
 
     logger = colorlog.getLogger()
     logger.addHandler(handler)
+
+    # Also show INFO logs
     logger.setLevel(logging.INFO)
+
+    # Add SUCCESS logging
+    logging.SUCCESS = 25
+    logging.addLevelName(
+        logging.SUCCESS,
+        "SUCCESS"
+    )
+
+    setattr(
+        logger,
+        "success",
+        lambda message, *args: logger._log(logging.SUCCESS, message, args)
+    )
 
 def print_banner():
     """Print a useless ASCII art banner to make things look a bit nicer."""

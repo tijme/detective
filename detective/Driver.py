@@ -32,42 +32,104 @@ from detective.helpers.PackageHelper import PackageHelper
 from requests_toolbelt import user_agent
 
 class Driver:
+    """The main Crawler class which handles the crawling recursion, queue and processes.
+
+    Attributes:
+        __args (:class:`argparse.Namespace`): A namespace with all the parsed CLI arguments.
+        __options (:class:`nyawc.Options`): The options to use for the current crawling runtime.
+
+    """
 
     def __init__(self, args, options):
-        self.args = args
-        self.options = options
+        """Constructs a Driver instance. The driver instance manages the crawling proces.
 
-        self.options.identity.headers.update({
+        Args:
+            args (:class:`argparse.Namespace`): A namespace with all the parsed CLI arguments.
+            options (:class:`nyawc.Options`): The options to use for the current crawling runtime.
+
+        """
+
+        self.__args = args
+
+        self.__options = options
+        self.__options.callbacks.crawler_before_start = self.cb_crawler_before_start
+        self.__options.callbacks.crawler_after_finish = self.cb_crawler_after_finish
+        self.__options.callbacks.request_before_start = self.cb_request_before_start
+        self.__options.callbacks.request_after_finish = self.cb_request_after_finish
+        self.__options.callbacks.request_on_error = self.cb_request_on_error
+
+        self.__options.identity.headers.update({
             "User-Agent": user_agent(PackageHelper.get_alias(), PackageHelper.get_version())
         })
 
-        self.options.callbacks.crawler_before_start = self.cb_crawler_before_start
-        self.options.callbacks.crawler_after_finish = self.cb_crawler_after_finish
-        self.options.callbacks.request_before_start = self.cb_request_before_start
-        self.options.callbacks.request_after_finish = self.cb_request_after_finish
-
     def start(self):
-        startpoint = Request(self.args.domain)
+        """Start the crawler."""
 
-        crawler = Crawler(self.options)
+        startpoint = Request(self.__args.domain)
+
+        crawler = Crawler(self.__options)
         crawler.start_with(startpoint)
 
     def cb_crawler_before_start(self):
-        colorlog.getLogger().info("Crawler started.")
+        """Called before the crawler starts crawling."""
+
+        colorlog.getLogger().info("Detective scanner started.")
 
     def cb_crawler_after_finish(self, queue):
-        colorlog.getLogger().info("Crawler finished.")
-        colorlog.getLogger().info("Found " + str(queue.count_finished) + " requests.")
+        """Crawler callback (called after the crawler finished).
+
+        Args:
+            queue (obj): The current crawling queue.
+
+        """
+
+        colorlog.getLogger().info("Detective scanner finished.")
+        colorlog.getLogger().success("Found " + str(queue.count_finished) + " endpoints with intresting information.")
 
     def cb_request_before_start(self, queue, queue_item):
-        vulnerable = False
+        """Crawler callback (called before a request starts).
 
-        if vulnerable:
-            if self.args.stop_if_vulnerable:
-                return CrawlerActions.DO_STOP_CRAWLING
+        Args:
+            queue (:class:`nyawc.Queue`): The current crawling queue.
+            queue_item (:class:`nyawc.QueueItem`): The queue item that's about to start.
+
+        Returns:
+            str: A crawler action (either DO_SKIP_TO_NEXT, DO_STOP_CRAWLING or DO_CONTINUE_CRAWLING).
+
+        """
+
+        colorlog.getLogger().info("Investigating " + queue_item.request.url)
 
         return CrawlerActions.DO_CONTINUE_CRAWLING
 
     def cb_request_after_finish(self, queue, queue_item, new_queue_items):
+        """Crawler callback (called after a request finished).
+
+        Args:
+            queue (:class:`nyawc.Queue`): The current crawling queue.
+            queue_item (:class:`nyawc.QueueItem`): The queue item that was finished.
+            new_queue_items list(:class:`nyawc.QueueItem`): The new queue items that were found in the one that finished.
+
+        Returns:
+            str: A crawler action (either DO_STOP_CRAWLING or DO_CONTINUE_CRAWLING).
+
+        """
+
+        vulnerable = False
+
+        if vulnerable:
+            if self.__args.stop_if_vulnerable:
+                return CrawlerActions.DO_STOP_CRAWLING
 
         return CrawlerActions.DO_CONTINUE_CRAWLING
+
+    def cb_request_on_error(self, queue_item, message):
+        """Crawler callback (called when a request error occurs).
+
+        Args:
+            queue_item (:class:`nyawc.QueueItem`): The queue item that failed.
+            message str: The error message.
+
+        """
+
+        colorlog.getLogger().error(message)
