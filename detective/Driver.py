@@ -23,13 +23,15 @@
 # SOFTWARE.
 
 import colorlog
+import requests
 
+from threading import Thread
+from requests_toolbelt import user_agent
 from nyawc.QueueItem import QueueItem
 from nyawc.Crawler import Crawler
 from nyawc.CrawlerActions import CrawlerActions
 from nyawc.http.Request import Request
 from detective.helpers.PackageHelper import PackageHelper
-from requests_toolbelt import user_agent
 
 class Driver:
     """The main Crawler class which handles the crawling recursion, queue and processes.
@@ -37,6 +39,7 @@ class Driver:
     Attributes:
         __args (:class:`argparse.Namespace`): A namespace with all the parsed CLI arguments.
         __options (:class:`nyawc.Options`): The options to use for the current crawling runtime.
+        __vulnerable_items list(:class:`nyawc.QueueItem`): A list of vulnerable items (if any).
 
     """
 
@@ -50,12 +53,14 @@ class Driver:
         """
 
         self.__args = args
-
         self.__options = options
+        self.__vulnerable_items = []
+
         self.__options.callbacks.crawler_before_start = self.cb_crawler_before_start
         self.__options.callbacks.crawler_after_finish = self.cb_crawler_after_finish
         self.__options.callbacks.request_before_start = self.cb_request_before_start
         self.__options.callbacks.request_after_finish = self.cb_request_after_finish
+        self.__options.callbacks.request_in_thread_after_finish = self.cb_request_in_thread_after_finish
         self.__options.callbacks.request_on_error = self.cb_request_on_error
 
         self.__options.identity.headers.update({
@@ -84,7 +89,11 @@ class Driver:
         """
 
         colorlog.getLogger().info("Detective scanner finished.")
-        colorlog.getLogger().success("Found " + str(queue.count_finished) + " endpoints with intresting information.")
+
+        if self.__vulnerable_items:
+            colorlog.getLogger().success("Found " + str(self.__vulnerable_items) + " endpoints with interesting  information.")
+        else:
+            colorlog.getLogger().warning("Couldn't find any endpoints with interesting  information.")
 
     def cb_request_before_start(self, queue, queue_item):
         """Crawler callback (called before a request starts).
@@ -99,6 +108,9 @@ class Driver:
         """
 
         colorlog.getLogger().info("Investigating " + queue_item.request.url)
+
+        if self.__vulnerable_items and self.__args.stop_if_vulnerable:
+            return CrawlerActions.DO_STOP_CRAWLING
 
         return CrawlerActions.DO_CONTINUE_CRAWLING
 
@@ -115,11 +127,8 @@ class Driver:
 
         """
 
-        vulnerable = False
-
-        if vulnerable:
-            if self.__args.stop_if_vulnerable:
-                return CrawlerActions.DO_STOP_CRAWLING
+        if self.__vulnerable_items and self.__args.stop_if_vulnerable:
+            return CrawlerActions.DO_STOP_CRAWLING
 
         return CrawlerActions.DO_CONTINUE_CRAWLING
 
@@ -128,8 +137,44 @@ class Driver:
 
         Args:
             queue_item (:class:`nyawc.QueueItem`): The queue item that failed.
-            message str: The error message.
+            message (str): The error message.
 
         """
 
         colorlog.getLogger().error(message)
+
+    def cb_request_in_thread_after_finish(self, queue_item):
+        """Crawler callback (called after a request finished).
+
+        Args:
+            queue_item (:class:`nyawc.QueueItem`): The queue item that's about to start.
+
+        Note:
+            This method gets called in the crawling thread and is therefore not thread safe.
+
+        """
+
+        pass
+
+    # def parse_queue_item(self, queue_item):
+    #     try:
+    #         request_by_method = getattr(requests, queue_item.request.method)
+    #         response = request_by_method(
+    #             url=queue_item.request.url,
+    #             data=queue_item.request.data,
+    #             auth=queue_item.request.auth,
+    #             cookies=queue_item.request.cookies,
+    #             headers=queue_item.request.headers,
+    #             proxies=queue_item.request.proxies,
+    #             allow_redirects=True,
+    #             stream=False
+    #         )
+
+    #         try:
+    #             response.raise_for_status()
+    #         except Exception:
+    #             return
+    #     except Exception:
+    #         return
+
+    #     self.__vulnerable_items.append(queue_item)
