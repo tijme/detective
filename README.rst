@@ -1,31 +1,37 @@
+.. raw:: html
+
+   <p align="center">
+
 .. image:: https://rawgit.com/tijme/detective/develop/.github/logo.svg
    :width: 300px
    :height: 300px
    :alt: Detective logo
-   
-Detective (in development)
---------------------------
 
+.. raw:: html
 
-.. image:: https://img.shields.io/pypi/pyversions/detective.svg
-   :target: https://www.python.org/
-   :alt: Python version
+   <br>
 
 .. image:: https://img.shields.io/pypi/v/detective.svg
    :target: https://pypi.python.org/pypi/detective/
    :alt: PyPi version
+   
+.. image:: https://img.shields.io/pypi/pyversions/detective.svg
+   :target: https://www.python.org/
+   :alt: Python version
 
 .. image:: https://img.shields.io/pypi/l/detective.svg
    :target: https://github.com/tijme/detective/blob/master/LICENSE.rst
    :alt: License: MIT
 
+.. raw:: html
+
+   </p>
+   
+*********
+Detective
+*********
 
 Detective helps you find information (at your favorite bug bounty program) that you are not supposed to see. It primarily focuses on information disclosure and sensitive data exposure vulnerabilities.
-
-1. Specify the program's scope.
-2. Run detective and wait.
-3. Profit!
-
 
 Table of contents
 -----------------
