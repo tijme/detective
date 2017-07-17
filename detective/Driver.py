@@ -23,15 +23,14 @@
 # SOFTWARE.
 
 import colorlog
-import requests
 
-from threading import Thread
 from requests_toolbelt import user_agent
 from nyawc.QueueItem import QueueItem
 from nyawc.Crawler import Crawler
 from nyawc.CrawlerActions import CrawlerActions
 from nyawc.http.Request import Request
 from detective.helpers.PackageHelper import PackageHelper
+from detective.Scanner import Scanner
 
 class Driver:
     """The main Crawler class which handles the crawling recursion, queue and processes.
@@ -39,7 +38,7 @@ class Driver:
     Attributes:
         __args (:class:`argparse.Namespace`): A namespace with all the parsed CLI arguments.
         __options (:class:`nyawc.Options`): The options to use for the current crawling runtime.
-        __vulnerable_items list(:class:`nyawc.QueueItem`): A list of vulnerable items (if any).
+        __vulnerable_items list(:class:`nyawc.http.Request`): A list of vulnerable items (if any).
 
     """
 
@@ -88,12 +87,20 @@ class Driver:
 
         """
 
-        colorlog.getLogger().info("Detective scanner finished.")
+        if queue.get_all(QueueItem.STATUS_CANCELLED):
+            colorlog.getLogger().warning("Detective scanner finished (but some requests were cancelled).")
+        else:
+            colorlog.getLogger().info("Detective scanner finished.")
 
         if self.__vulnerable_items:
-            colorlog.getLogger().success("Found " + str(self.__vulnerable_items) + " endpoints with interesting  information.")
+            colorlog.getLogger().success("Found " + str(len(self.__vulnerable_items)) + " endpoint(s) with interesting information.")
+            colorlog.getLogger().success("Listing endpoint(s) with interesting information.")
+
+            for vulnerable_item in self.__vulnerable_items:
+                colorlog.getLogger().success(vulnerable_item.url)
         else:
-            colorlog.getLogger().warning("Couldn't find any endpoints with interesting  information.")
+            colorlog.getLogger().warning("Couldn't find any endpoints with interesting information.")
+
 
     def cb_request_before_start(self, queue, queue_item):
         """Crawler callback (called before a request starts).
@@ -127,6 +134,8 @@ class Driver:
 
         """
 
+        self.__vulnerable_items.extend(queue_item.vulnerable_items)
+
         if self.__vulnerable_items and self.__args.stop_if_vulnerable:
             return CrawlerActions.DO_STOP_CRAWLING
 
@@ -154,27 +163,4 @@ class Driver:
 
         """
 
-        pass
-
-    # def parse_queue_item(self, queue_item):
-    #     try:
-    #         request_by_method = getattr(requests, queue_item.request.method)
-    #         response = request_by_method(
-    #             url=queue_item.request.url,
-    #             data=queue_item.request.data,
-    #             auth=queue_item.request.auth,
-    #             cookies=queue_item.request.cookies,
-    #             headers=queue_item.request.headers,
-    #             proxies=queue_item.request.proxies,
-    #             allow_redirects=True,
-    #             stream=False
-    #         )
-
-    #         try:
-    #             response.raise_for_status()
-    #         except Exception:
-    #             return
-    #     except Exception:
-    #         return
-
-    #     self.__vulnerable_items.append(queue_item)
+        queue_item.vulnerable_items = Scanner(queue_item).get_vulnerable_items()

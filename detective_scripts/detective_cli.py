@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import sys
 import argparse
 import colorlog
 import logging
@@ -110,6 +111,8 @@ Version """ + PackageHelper.get_version() + """ - Copyright 2017 Tijme Gommers <
 
 def main():
     """Start the scanner."""
+
+    sys.setrecursionlimit(5000)
 
     print_banner()
     setup_logger()

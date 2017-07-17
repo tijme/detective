@@ -23,6 +23,7 @@
 # SOFTWARE.
 
 import os
+import re
 import pkg_resources
 
 class PackageHelper:
