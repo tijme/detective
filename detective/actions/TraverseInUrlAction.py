@@ -25,16 +25,54 @@
 from detective.actions.BaseAction import BaseAction
 
 class TraverseInUrlAction(BaseAction):
-    """
+    """Traverse the affix in the URL from the queue item.
 
-    Todo:
-        Everything.
+    Attributes:
+        __affix (str): The string to traverse in the URL.
 
     """
 
     def __init__(self, affix):
+        """Constructs a TraverseInUrlAction instance.
+
+        Args:
+            affix (str): The string to traverse in the URL.
+
+        """
+
         BaseAction.__init__(self)
         self.__affix = affix
 
     def get_action_items_derived(self):
-        return []
+        """Get new queue items based on this action.
+
+        Returns:
+            list(:class:`nyawc.QueueItem`): A list of possibly vulnerable queue items.
+
+        """
+
+        # remove filename first
+
+        items = []
+
+        path = self.get_parsed_url().path
+        filename = self.get_filename()
+
+        if filename:
+            path[0:-len(filename)]
+
+        parts = path.split("/")
+
+        for index in range(0, len(parts)):
+            queue_item = self.get_item_copy()
+
+            path = "/".join(parts[0:index])
+            path_with_affix = ("/" if path else "") + path + "/" + self.__affix
+
+            parsed = self.get_parsed_url(queue_item.request.url)
+            parsed = parsed._replace(path=path_with_affix)
+            queue_item.request.url = parsed.geturl()
+
+            items.append(queue_item)
+
+        return items

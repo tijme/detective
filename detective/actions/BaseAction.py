@@ -24,6 +24,10 @@
 
 import copy
 
+from nyawc.QueueItem import QueueItem
+from nyawc.http.Request import Request
+from nyawc.http.Response import Response
+
 try: # Python 3
     from urllib.parse import urljoin, urlparse, parse_qsl, urlencode, urlunparse
 except: # Python 2
@@ -60,7 +64,8 @@ class BaseAction(object):
 
         """
 
-        return copy.deepcopy(self.__queue_item)
+        request = copy.deepcopy(self.__queue_item.request)
+        return QueueItem(request, Response(request.url))
 
     def get_parsed_url(self, url=None):
         """Get the parsed URL.

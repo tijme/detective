@@ -97,7 +97,7 @@ class Driver:
             colorlog.getLogger().success("Listing endpoint(s) with interesting information.")
 
             for vulnerable_item in self.__vulnerable_items:
-                colorlog.getLogger().success(vulnerable_item.url)
+                colorlog.getLogger().success(vulnerable_item.request.url)
         else:
             colorlog.getLogger().warning("Couldn't find any endpoints with interesting information.")
 
@@ -135,6 +135,9 @@ class Driver:
         """
 
         self.__vulnerable_items.extend(queue_item.vulnerable_items)
+
+        for vulnerable_item in self.__vulnerable_items:
+            colorlog.getLogger().success(vulnerable_item.request.url)
 
         if self.__vulnerable_items and self.__args.stop_if_vulnerable:
             return CrawlerActions.DO_STOP_CRAWLING
