@@ -50,7 +50,7 @@ Usage
 
 **Help**
 
-.. code:: bash
+.. code:: text
 
    usage: detective [-h] -d DOMAIN [-pmm] [-cos] [-coh] [-cot] [-siv] [-md MAX_DEPTH] [-mt MAX_THREADS]
 

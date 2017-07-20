@@ -70,7 +70,6 @@ class Scanner:
         TraverseInUrlAction("nginx.conf"),
 
         # Replace extension
-        ReplaceExtensionAction(".jpg", ".jpg.old"),
         ReplaceExtensionAction(".php", ".php.old"),
         ReplaceExtensionAction(".php", ".php.bak"),
         ReplaceExtensionAction(".jsp", ".jsp.old"),
