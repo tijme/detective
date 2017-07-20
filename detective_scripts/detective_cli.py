@@ -46,7 +46,7 @@ def require_arguments():
     optional = parser._action_groups.pop()
     required = parser.add_argument_group("required arguments")
 
-    required.add_argument("-d", "--domain", help="the domain to crawl (e.g. finnwea.com)", required=True)
+    required.add_argument("-d", "--domain", help="the domain to crawl (e.g. https://finnwea.com)", required=True)
 
     optional.add_argument("-pmm", "--protocol-must-match", help="only crawl pages with the same protocol as the startpoint (e.g. only https)", action="store_true")
     optional.add_argument("-cos", "--crawl-other-subdomains", help="also crawl pages that have another subdomain than the startpoint", action="store_true")

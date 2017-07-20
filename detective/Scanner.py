@@ -35,6 +35,7 @@ class Scanner:
     Attributes:
         actions list(:class:`detective.actions.BaseAction`): The actions to perform on the queue item.
         scanned_hashes list(str): A list of scanned queue item hashes.
+        __driver (:class:`detective.Driver`): Used to check if we should stop scanning.
         __queue_item (:class:`nyawc.QueueItem`): The queue item to perform actions on.
 
     """
@@ -78,14 +79,16 @@ class Scanner:
 
     scanned_hashes = []
 
-    def __init__(self, queue_item):
+    def __init__(self, driver, queue_item):
         """Initialize a scanner for the given queue item.
 
         Args:
+            driver (:class:`detective.Driver`): Used to check if we should stop scanning.
             queue_item (:class:`nyawc.QueueItem`): The queue item to scan.
 
         """
 
+        self.__driver = driver
         self.__queue_item = queue_item
 
     def get_vulnerable_items(self):
@@ -99,9 +102,15 @@ class Scanner:
         results = []
 
         for action in self.actions:
+            if self.__driver.stopping:
+                break
+
             items = action.get_action_items(self.__queue_item)
 
             for item in items:
+                if self.__driver.stopping:
+                    break
+
                 if item.get_hash() in self.scanned_hashes:
                     continue
 
@@ -124,6 +133,7 @@ class Scanner:
         """
 
         try:
+            queue_item.request.timeout = 15
             handler = HttpHandler(None, queue_item)
 
             try:

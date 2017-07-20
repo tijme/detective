@@ -64,6 +64,11 @@ setup(
             ".semver"
         ]
     },
+    entry_points = {
+        'console_scripts': [
+            'detective = detective_scripts.detective_cli:main'
+        ]
+    },
     platforms=["any"],
     author="Tijme Gommers",
     author_email="detective@finnwea.com",

@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import signal
 import colorlog
 
 from requests_toolbelt import user_agent
@@ -39,6 +40,7 @@ class Driver:
         __args (:class:`argparse.Namespace`): A namespace with all the parsed CLI arguments.
         __options (:class:`nyawc.Options`): The options to use for the current crawling runtime.
         __vulnerable_items list(:class:`nyawc.http.Request`): A list of vulnerable items (if any).
+        __stopping (bool): True on SIGINT, false otherwise.
 
     """
 
@@ -54,6 +56,7 @@ class Driver:
         self.__args = args
         self.__options = options
         self.__vulnerable_items = []
+        self.__stopping = False
 
         self.__options.callbacks.crawler_before_start = self.cb_crawler_before_start
         self.__options.callbacks.crawler_after_finish = self.cb_crawler_after_finish
@@ -66,12 +69,24 @@ class Driver:
             "User-Agent": user_agent(PackageHelper.get_alias(), PackageHelper.get_version())
         })
 
+    def __signal_handler(self, signum, frame):
+        """On sigint (e.g. CTRL+C) stop the crawler.
+
+        Args:
+            signum (int): The signal number.
+            frame (obj): The current stack frame.
+
+        """
+
+        self.__stopping = True
+
     def start(self):
         """Start the crawler."""
 
-        startpoint = Request(self.__args.domain)
-
         crawler = Crawler(self.__options)
+        signal.signal(signal.SIGINT, self.__signal_handler)
+
+        startpoint = Request(self.__args.domain)
         crawler.start_with(startpoint)
 
     def cb_crawler_before_start(self):
@@ -119,6 +134,9 @@ class Driver:
         if self.__vulnerable_items and self.__args.stop_if_vulnerable:
             return CrawlerActions.DO_STOP_CRAWLING
 
+        if self.__stopping:
+            return CrawlerActions.DO_STOP_CRAWLING
+
         return CrawlerActions.DO_CONTINUE_CRAWLING
 
     def cb_request_after_finish(self, queue, queue_item, new_queue_items):
@@ -140,6 +158,9 @@ class Driver:
             colorlog.getLogger().success(vulnerable_item.request.url)
 
         if self.__vulnerable_items and self.__args.stop_if_vulnerable:
+            return CrawlerActions.DO_STOP_CRAWLING
+
+        if self.__stopping:
             return CrawlerActions.DO_STOP_CRAWLING
 
         return CrawlerActions.DO_CONTINUE_CRAWLING
@@ -166,4 +187,4 @@ class Driver:
 
         """
 
-        queue_item.vulnerable_items = Scanner(queue_item).get_vulnerable_items()
+        queue_item.vulnerable_items = Scanner(self, queue_item).get_vulnerable_items()
