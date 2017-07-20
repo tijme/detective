@@ -137,6 +137,7 @@ class Driver:
         colorlog.getLogger().info("Investigating " + queue_item.request.url)
 
         if self.__vulnerable_items and self.__args.stop_if_vulnerable:
+            self.stopping = True
             return CrawlerActions.DO_STOP_CRAWLING
 
         if self.stopping:
@@ -163,6 +164,7 @@ class Driver:
             colorlog.getLogger().success(vulnerable_item.request.url)
 
         if self.__vulnerable_items and self.__args.stop_if_vulnerable:
+            self.stopping = True
             return CrawlerActions.DO_STOP_CRAWLING
 
         if self.stopping:
