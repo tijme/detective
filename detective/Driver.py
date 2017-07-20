@@ -40,7 +40,7 @@ class Driver:
         __args (:class:`argparse.Namespace`): A namespace with all the parsed CLI arguments.
         __options (:class:`nyawc.Options`): The options to use for the current crawling runtime.
         __vulnerable_items list(:class:`nyawc.http.Request`): A list of vulnerable items (if any).
-        __stopping (bool): True on SIGINT, false otherwise.
+        stopping (bool): True on SIGINT, false otherwise.
 
     """
 
@@ -56,7 +56,7 @@ class Driver:
         self.__args = args
         self.__options = options
         self.__vulnerable_items = []
-        self.__stopping = False
+        self.stopping = False
 
         self.__options.callbacks.crawler_before_start = self.cb_crawler_before_start
         self.__options.callbacks.crawler_after_finish = self.cb_crawler_after_finish
@@ -78,7 +78,12 @@ class Driver:
 
         """
 
-        self.__stopping = True
+        if self.stopping:
+            return
+
+        self.stopping = True
+
+        colorlog.getLogger().warning("Received SIGINT, stopping the crawling threads safely. This could take up to 15 seconds (the thread timeout).")
 
     def start(self):
         """Start the crawler."""
@@ -134,7 +139,7 @@ class Driver:
         if self.__vulnerable_items and self.__args.stop_if_vulnerable:
             return CrawlerActions.DO_STOP_CRAWLING
 
-        if self.__stopping:
+        if self.stopping:
             return CrawlerActions.DO_STOP_CRAWLING
 
         return CrawlerActions.DO_CONTINUE_CRAWLING
@@ -154,13 +159,13 @@ class Driver:
 
         self.__vulnerable_items.extend(queue_item.vulnerable_items)
 
-        for vulnerable_item in self.__vulnerable_items:
+        for vulnerable_item in queue_item.vulnerable_items:
             colorlog.getLogger().success(vulnerable_item.request.url)
 
         if self.__vulnerable_items and self.__args.stop_if_vulnerable:
             return CrawlerActions.DO_STOP_CRAWLING
 
-        if self.__stopping:
+        if self.stopping:
             return CrawlerActions.DO_STOP_CRAWLING
 
         return CrawlerActions.DO_CONTINUE_CRAWLING
@@ -187,4 +192,10 @@ class Driver:
 
         """
 
-        queue_item.vulnerable_items = Scanner(self, queue_item).get_vulnerable_items()
+        queue_item.vulnerable_items = []
+
+        if self.stopping:
+            return
+
+        if str(queue_item.response.status_code).startswith(("2", "3")):
+            queue_item.vulnerable_items = Scanner(self, queue_item).get_vulnerable_items()

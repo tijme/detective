@@ -51,8 +51,6 @@ class TraverseInUrlAction(BaseAction):
 
         """
 
-        # remove filename first
-
         items = []
 
         path = self.get_parsed_url().path
@@ -61,7 +59,7 @@ class TraverseInUrlAction(BaseAction):
         if filename:
             path[0:-len(filename)]
 
-        parts = path.split("/")
+        parts = list(filter(None, path.split("/")))
 
         for index in range(0, len(parts)):
             queue_item = self.get_item_copy()

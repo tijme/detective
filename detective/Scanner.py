@@ -24,7 +24,6 @@
 
 import requests
 
-from nyawc.http.Handler import Handler as HttpHandler
 from detective.actions.AppendToUrlAction import AppendToUrlAction
 from detective.actions.TraverseInUrlAction import TraverseInUrlAction
 from detective.actions.ReplaceExtensionAction import ReplaceExtensionAction
@@ -37,6 +36,7 @@ class Scanner:
         scanned_hashes list(str): A list of scanned queue item hashes.
         __driver (:class:`detective.Driver`): Used to check if we should stop scanning.
         __queue_item (:class:`nyawc.QueueItem`): The queue item to perform actions on.
+        __session (obj): A Python requests session.
 
     """
 
@@ -90,6 +90,10 @@ class Scanner:
 
         self.__driver = driver
         self.__queue_item = queue_item
+        self.__session = requests.Session()
+
+        self.__session.mount('http://', requests.adapters.HTTPAdapter(max_retries=1))
+        self.__session.mount('https://', requests.adapters.HTTPAdapter(max_retries=1))
 
     def get_vulnerable_items(self):
         """Get a list of vulnerable queue items, if any.
@@ -133,8 +137,16 @@ class Scanner:
         """
 
         try:
-            queue_item.request.timeout = 15
-            handler = HttpHandler(None, queue_item)
+            queue_item.response = self.__make_request(
+                queue_item.request.url,
+                queue_item.request.method,
+                queue_item.request.data,
+                queue_item.request.auth,
+                queue_item.request.cookies,
+                queue_item.request.headers,
+                queue_item.request.proxies,
+                15
+            )
 
             try:
                 queue_item.response.raise_for_status()
@@ -145,3 +157,35 @@ class Scanner:
             return False
 
         return True
+
+
+    def __make_request(self, url, method, data, auth, cookies, headers, proxies, timeout):
+        """Execute a request with the given data.
+
+        Args:
+            url (str): The URL to call.
+            method (str): The method (e.g. `get` or `post`).
+            data (str): The data to call the URL with.
+            auth (obj): The authentication class.
+            cookies (obj): The cookie dict.
+            headers (obj): The header dict.
+            proxies (obj): The proxies dict.
+            timeout (int): The request timeout in seconds
+
+        Returns:
+            obj: The response object.
+
+        """
+
+        request_by_method = getattr(self.__session, method)
+        return request_by_method(
+            url=url,
+            data=data,
+            auth=auth,
+            cookies=cookies,
+            headers=headers,
+            proxies=proxies,
+            timeout=timeout,
+            allow_redirects=True,
+            stream=False
+        )
