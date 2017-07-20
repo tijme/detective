@@ -26,7 +26,7 @@
 .. raw:: html
 
    </p>
-   <h1>Detective (IN DEVELOPMENT)</h1>
+   <h1>Detective</h1>
 
 Detective helps you find information (at your favorite bug bounty program) that you are not supposed to see. It primarily focuses on information disclosure and sensitive data exposure vulnerabilities.
 
