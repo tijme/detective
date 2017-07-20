@@ -34,7 +34,7 @@ Table of contents
 -----------------
 
 -  `Installation <#installation>`__
--  `Documentation <#documentation>`__
+-  `Usage <#usage>`__
 -  `Issues <#issues>`__
 -  `License <#license>`__
 
@@ -45,10 +45,31 @@ First make sure you're on `Python 2.7/3.3 <https://www.python.org/>`__ or higher
 
 ``$ pip install --upgrade detective``
 
-Documentation
+Usage
 -------------
 
-#ToDo
+**Help**
+
+.. code:: bash
+
+   usage: detective [-h] -d DOMAIN [-pmm] [-cos] [-coh] [-cot] [-siv] [-md MAX_DEPTH] [-mt MAX_THREADS]
+
+   required arguments:
+      -d DOMAIN, --domain DOMAIN                  the domain to crawl (e.g. https://finnwea.com)
+
+   optional arguments:
+      -h, --help                                  show this help message and exit
+      -pmm, --protocol-must-match                 only crawl pages with the same protocol as the startpoint (e.g. only https)
+      -cos, --crawl-other-subdomains              also crawl pages that have another subdomain than the startpoint
+      -coh, --crawl-other-hostnames               also crawl pages that have another hostname than the startpoint
+      -cot, --crawl-other-tlds                    also crawl pages that have another tld than the startpoint
+      -siv, --stop-if-vulnerable                  stop crawling if a vulnerability was found
+      -md MAX_DEPTH, --max-depth MAX_DEPTH        the maximum search depth (default is unlimited)
+      -mt MAX_THREADS, --max-threads MAX_THREADS  the maximum amount of simultaneous threads to use (default is 8)
+
+**Example**
+
+``detective -d https://finnwea.com -siv``
 
 Issues
 ------
