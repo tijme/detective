@@ -54,6 +54,7 @@ class Scanner:
         AppendToUrlAction(".htpasswd.old"),
         AppendToUrlAction(".htpasswd.bak"),
         AppendToUrlAction("nginx.conf"),
+        AppendToUrlAction(".git/config"),
 
         # Traverse in URL
         TraverseInUrlAction(".DS_Store"),
@@ -68,6 +69,7 @@ class Scanner:
         TraverseInUrlAction(".htpasswd.old"),
         TraverseInUrlAction(".htpasswd.bak"),
         TraverseInUrlAction("nginx.conf"),
+        TraverseInUrlAction(".git/config"),
 
         # Replace extension
         ReplaceExtensionAction(".php", ".php.old"),

@@ -10,16 +10,16 @@
 .. raw:: html
 
    <br class="title">
-
-.. image:: https://img.shields.io/pypi/v/detective.svg
+   
+.. image:: https://raw.finnwea.com/shield/?firstText=Donate%20via&secondText=Bunq
+   :target: https://bunq.me/tijme/0/Raivo;%20a%20native,%20lightweight%20and%20secure%20one-time%20&%20time-based%20password%20client%20built%20for%20iOS
+   :alt: Donate via Bunq
+   
+.. image:: https://raw.finnwea.com/shield/?typeKey=SemverVersion&typeValue1=detective&typeValue2=master
    :target: https://pypi.python.org/pypi/detective/
    :alt: PyPi version
 
-.. image:: https://img.shields.io/pypi/pyversions/detective.svg
-   :target: https://www.python.org/
-   :alt: Python version
-
-.. image:: https://img.shields.io/pypi/l/detective.svg
+.. image:: https://raw.finnwea.com/shield/?firstText=License&secondText=MIT
    :target: https://github.com/tijme/detective/blob/master/LICENSE.rst
    :alt: License: MIT
 
